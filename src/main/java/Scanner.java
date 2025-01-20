@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,27 +10,24 @@ public class Scanner {
     private int current = 0;
     private int line = 1;
 
-    private static final Map<String, TokenType> keywords;
-
-    static {
-        keywords = new HashMap<>();
-        keywords.put("and", TokenType.AND);
-        keywords.put("class", TokenType.CLASS);
-        keywords.put("else", TokenType.ELSE);
-        keywords.put("false", TokenType.FALSE);
-        keywords.put("for", TokenType.FOR);
-        keywords.put("fun", TokenType.FUN);
-        keywords.put("if", TokenType.IF);
-        keywords.put("nil", TokenType.NIL);
-        keywords.put("or", TokenType.OR);
-        keywords.put("print", TokenType.PRINT);
-        keywords.put("return", TokenType.RETURN);
-        keywords.put("super", TokenType.SUPER);
-        keywords.put("this", TokenType.THIS);
-        keywords.put("true", TokenType.TRUE);
-        keywords.put("var", TokenType.VAR);
-        keywords.put("while", TokenType.WHILE);
-    }
+    private static final Map<String, TokenType> keywords = Map.ofEntries(
+            Map.entry("and", TokenType.AND),
+            Map.entry("class", TokenType.CLASS),
+            Map.entry("else", TokenType.ELSE),
+            Map.entry("false", TokenType.FALSE),
+            Map.entry("for", TokenType.FOR),
+            Map.entry("fun", TokenType.FUN),
+            Map.entry("if", TokenType.IF),
+            Map.entry("nil", TokenType.NIL),
+            Map.entry("or", TokenType.OR),
+            Map.entry("print", TokenType.PRINT),
+            Map.entry("return", TokenType.RETURN),
+            Map.entry("super", TokenType.SUPER),
+            Map.entry("this", TokenType.THIS),
+            Map.entry("true", TokenType.TRUE),
+            Map.entry("var", TokenType.VAR),
+            Map.entry("while", TokenType.WHILE)
+    );
 
     Scanner(String source){
         this.source = source;
@@ -52,59 +48,47 @@ public class Scanner {
 
     private void scanToken(){
         char c = advance();
-        switch (c){
-            case '(': addToken(TokenType.LEFT_PAREN); break;
-            case ')': addToken(TokenType.RIGHT_PAREN); break;
-            case '{': addToken(TokenType.LEFT_BRACE); break;
-            case '}': addToken(TokenType.RIGHT_BRACE); break;
-            case ',': addToken(TokenType.COMMA); break;
-            case '.': addToken(TokenType.DOT); break;
-            case '-': addToken(TokenType.MINUS); break;
-            case '+': addToken(TokenType.PLUS); break;
-            case ';': addToken(TokenType.SEMICOLON); break;
-            case '*': addToken(TokenType.STAR); break;
-
-            case '!': addToken(match('=') ? TokenType.BANG_EQUALS : TokenType.BANG); break;
-            case '=': addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL); break;
-            case '<': addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
-            case '>': addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
-
-            case '/':
-                if (match('/')){
-                    while(peek() != '\n' && !isAtEnd()) advance();
+        switch (c) {
+            case '(' -> addToken(TokenType.LEFT_PAREN);
+            case ')' -> addToken(TokenType.RIGHT_PAREN);
+            case '{' -> addToken(TokenType.LEFT_BRACE);
+            case '}' -> addToken(TokenType.RIGHT_BRACE);
+            case ',' -> addToken(TokenType.COMMA);
+            case '.' -> addToken(TokenType.DOT);
+            case '-' -> addToken(TokenType.MINUS);
+            case '+' -> addToken(TokenType.PLUS);
+            case ';' -> addToken(TokenType.SEMICOLON);
+            case '*' -> addToken(TokenType.STAR);
+            case '!' -> addToken(match('=') ? TokenType.BANG_EQUALS : TokenType.BANG);
+            case '=' -> addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+            case '<' -> addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
+            case '>' -> addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+            case '/' -> {
+                if (match('/')) {
+                    while (peek() != '\n' && !isAtEnd()) advance();
                 } else if (match('*')) {
-                    multi_line_comment();
+                    multiLineComment();
                 } else {
                     addToken(TokenType.SLASH);
                 }
-                break;
-
-            case ' ':
-            case '\r':
-            case '\t':
-                break;
-
-            case '\n':
-                line++;
-                break;
-
-            case '"': string(); break;
-            default:
-                if (isDigit(c)){
+            }
+            case ' ', '\r', '\t' -> {} // Ignore whitespace
+            case '\n' -> line++;
+            case '"' -> string();
+            default -> {
+                if (isDigit(c)) {
                     number();
-                }
-                else if (isAlpha(c)){
+                } else if (isAlpha(c)) {
                     identifier();
+                } else {
+                    SeanieScript.error(line, "Unexpected character.");
                 }
-                else {
-                    SeanieScript.error(line, "Unexpected Char");
-                }
-                break;
+            }
         }
     }
 
     private char advance(){
-        return source.charAt(current++ - 1);
+        return source.charAt(current++);
     }
 
     private void addToken(TokenType type){
@@ -133,7 +117,7 @@ public class Scanner {
         return source.charAt(current + 1);
     }
 
-    private void multi_line_comment(){
+    private void multiLineComment(){
         while (peek() != '*' && peekNext() != '/' && !isAtEnd()){
             if (peek() == '\n') line++;
             advance();
