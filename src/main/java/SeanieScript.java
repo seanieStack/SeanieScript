@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,11 +12,13 @@ public class SeanieScript {
     static boolean hadError = false;
 
     public static void main(String[] args) throws IOException {
-        if(args.length != 1) {
-            System.out.println("Usage: java SeanieScript <filename>");
+        if (args.length > 1) {
+            System.out.println("Usage: SeanieScript [script]");
             System.exit(1);
-        } else {
+        } else if (args.length == 1) {
             runFile(args[0]);
+        } else {
+            runPrompt();
         }
     }
 
@@ -44,5 +48,18 @@ public class SeanieScript {
         System.err.printf("[line %d] Error %s: %s%n", line, where, message);
         hadError = true;
 
+    }
+
+    private static void runPrompt() throws IOException {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+
+        for (;;) {
+            System.out.print("> ");
+            String line = reader.readLine();
+            if (line == null) break;
+            run(line);
+            hadError = false;
+        }
     }
 }
