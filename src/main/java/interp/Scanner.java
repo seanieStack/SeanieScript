@@ -1,6 +1,10 @@
+package interp;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static interp.TokenType.*;
 
 public class Scanner {
     private final String source;
@@ -11,22 +15,22 @@ public class Scanner {
     private int line = 1;
 
     private static final Map<String, TokenType> keywords = Map.ofEntries(
-            Map.entry("and", TokenType.AND),
-            Map.entry("class", TokenType.CLASS),
-            Map.entry("else", TokenType.ELSE),
-            Map.entry("false", TokenType.FALSE),
-            Map.entry("for", TokenType.FOR),
-            Map.entry("fun", TokenType.FUN),
-            Map.entry("if", TokenType.IF),
-            Map.entry("nil", TokenType.NIL),
-            Map.entry("or", TokenType.OR),
-            Map.entry("print", TokenType.PRINT),
-            Map.entry("return", TokenType.RETURN),
-            Map.entry("super", TokenType.SUPER),
-            Map.entry("this", TokenType.THIS),
-            Map.entry("true", TokenType.TRUE),
-            Map.entry("var", TokenType.VAR),
-            Map.entry("while", TokenType.WHILE)
+            Map.entry("and", AND),
+            Map.entry("class", CLASS),
+            Map.entry("else", ELSE),
+            Map.entry("false", FALSE),
+            Map.entry("for", FOR),
+            Map.entry("fun", FUN),
+            Map.entry("if", IF),
+            Map.entry("nil", NIL),
+            Map.entry("or", OR),
+            Map.entry("print", PRINT),
+            Map.entry("return", RETURN),
+            Map.entry("super", SUPER),
+            Map.entry("this", THIS),
+            Map.entry("true", TRUE),
+            Map.entry("var", VAR),
+            Map.entry("while", WHILE)
     );
 
     Scanner(String source){
@@ -38,7 +42,7 @@ public class Scanner {
             start = current;
             scanToken();
         }
-        tokens.add(new Token(TokenType.EOF, "", null, line));
+        tokens.add(new Token(EOF, "", null, line));
         return tokens;
     }
 
@@ -49,27 +53,27 @@ public class Scanner {
     private void scanToken(){
         char c = advance();
         switch (c) {
-            case '(' -> addToken(TokenType.LEFT_PAREN);
-            case ')' -> addToken(TokenType.RIGHT_PAREN);
-            case '{' -> addToken(TokenType.LEFT_BRACE);
-            case '}' -> addToken(TokenType.RIGHT_BRACE);
-            case ',' -> addToken(TokenType.COMMA);
-            case '.' -> addToken(TokenType.DOT);
-            case '-' -> addToken(TokenType.MINUS);
-            case '+' -> addToken(TokenType.PLUS);
-            case ';' -> addToken(TokenType.SEMICOLON);
-            case '*' -> addToken(TokenType.STAR);
-            case '!' -> addToken(match('=') ? TokenType.BANG_EQUALS : TokenType.BANG);
-            case '=' -> addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
-            case '<' -> addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
-            case '>' -> addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+            case '(' -> addToken(LEFT_PAREN);
+            case ')' -> addToken(RIGHT_PAREN);
+            case '{' -> addToken(LEFT_BRACE);
+            case '}' -> addToken(RIGHT_BRACE);
+            case ',' -> addToken(COMMA);
+            case '.' -> addToken(DOT);
+            case '-' -> addToken(MINUS);
+            case '+' -> addToken(PLUS);
+            case ';' -> addToken(SEMICOLON);
+            case '*' -> addToken(STAR);
+            case '!' -> addToken(match('=') ? BANG_EQUALS : BANG);
+            case '=' -> addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+            case '<' -> addToken(match('=') ? LESS_EQUAL : LESS);
+            case '>' -> addToken(match('=') ? GREATER_EQUAL : GREATER);
             case '/' -> {
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();
                 } else if (match('*')) {
                     multiLineComment();
                 } else {
-                    addToken(TokenType.SLASH);
+                    addToken(SLASH);
                 }
             }
             case ' ', '\r', '\t' -> {} // Ignore whitespace
@@ -143,7 +147,7 @@ public class Scanner {
         advance();
 
         String value = source.substring(start + 1, current - 1);
-        addToken(TokenType.STRING, value);
+        addToken(STRING, value);
     }
 
     private boolean isDigit(char c){
@@ -159,7 +163,7 @@ public class Scanner {
             while (isDigit(peek()));
         }
 
-        addToken(TokenType.NUMBER, Double.parseDouble(source.substring(start, current)));
+        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
     }
 
     private void identifier(){
@@ -167,7 +171,7 @@ public class Scanner {
 
         String text = source.substring(start, current);
         TokenType type = keywords.get(text);
-        if (type == null) type = TokenType.IDENTIFIER;
+        if (type == null) type = IDENTIFIER;
         addToken(type);
     }
 
